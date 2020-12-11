@@ -1,19 +1,21 @@
 from typing import TYPE_CHECKING
+import uuid
 
-from sqlalchemy import Column, Integer, String, Text, ARRAY
+from sqlalchemy import Column, String, Text, ARRAY
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
 
 if TYPE_CHECKING:
-    from .item import Item  # noqa: F401
+    from .lecture import Lecture  # noqa: F401
 
 
 class User(Base):
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     name = Column(String, index=True)
     company = Column(String)
     bio = Column(Text)
     avatar_url = Column(String)
     social_urls = Column(ARRAY(String))
-    # items = relationship("Item", back_populates="owner")
+    lectures = relationship("Lecture", back_populates="author")

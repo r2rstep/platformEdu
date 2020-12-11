@@ -1,4 +1,5 @@
 from typing import Any, Dict, Optional, Union
+import uuid
 
 from sqlalchemy.orm import Session
 
@@ -17,6 +18,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
         db_obj = User(
+            id=uuid.uuid4(),
             name=obj_in.name
         )
         db.add(db_obj)

@@ -1,61 +1,67 @@
+from datetime import datetime
+
+import pytest
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.schemas.item import ItemCreate, ItemUpdate
+from app.schemas.lecture import LectureCreate, LectureUpdate, LectureInDB
+from app.schemas.user import UserInDB
 from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_lower_string
 
 
-def test_create_item(db: Session) -> None:
-    title = random_lower_string()
-    description = random_lower_string()
-    item_in = ItemCreate(title=title, description=description)
+@pytest.fixture(scope='module')
+def user(db: Session) -> UserInDB:
     user = create_random_user(db)
-    item = crud.item.create_with_owner(db=db, obj_in=item_in, owner_id=user.id)
-    assert item.title == title
-    assert item.description == description
-    assert item.owner_id == user.id
+    yield user
+    crud.user.remove(db, id=user.id)
 
 
-def test_get_item(db: Session) -> None:
+@pytest.fixture(scope='module')
+def lecture(db: Session, user: UserInDB) -> LectureCreate:
     title = random_lower_string()
-    description = random_lower_string()
-    item_in = ItemCreate(title=title, description=description)
-    user = create_random_user(db)
-    item = crud.item.create_with_owner(db=db, obj_in=item_in, owner_id=user.id)
-    stored_item = crud.item.get(db=db, id=item.id)
-    assert stored_item
-    assert item.id == stored_item.id
-    assert item.title == stored_item.title
-    assert item.description == stored_item.description
-    assert item.owner_id == stored_item.owner_id
+    content = random_lower_string()
+    new_lecture_ = LectureCreate(title=title, content=content, author_id=user.id, uploaded_at=datetime.utcnow(),
+                                 slug=random_lower_string())
+    yield new_lecture_
 
 
-def test_update_item(db: Session) -> None:
-    title = random_lower_string()
-    description = random_lower_string()
-    item_in = ItemCreate(title=title, description=description)
-    user = create_random_user(db)
-    item = crud.item.create_with_owner(db=db, obj_in=item_in, owner_id=user.id)
+@pytest.fixture(scope='module')
+def lecture_in_db(db: Session, lecture: LectureCreate) -> LectureInDB:
+    lecture_in_db = crud.lecture.create(db=db, obj_in=lecture)
+    yield lecture_in_db
+    if crud.lecture.get(db=db, id=lecture_in_db.id):
+        crud.lecture.remove(db, id=lecture_in_db.id)
+
+
+def test_create_lecture(db: Session, lecture_in_db: LectureInDB, lecture: LectureCreate, user) -> None:
+    assert lecture_in_db.title == lecture.title
+    assert lecture_in_db.content == lecture.content
+    assert lecture_in_db.author_id == user.id
+
+
+def test_get_lecture(db: Session, lecture_in_db: LectureInDB) -> None:
+    stored_lecture = crud.lecture.get(db=db, id=lecture_in_db.id)
+    assert stored_lecture
+    assert lecture_in_db.id == stored_lecture.id
+    assert lecture_in_db.title == stored_lecture.title
+    assert lecture_in_db.content == stored_lecture.content
+    assert lecture_in_db.author_id == stored_lecture.author_id
+
+
+def test_update_lecture(db: Session, lecture_in_db: LectureInDB) -> None:
     description2 = random_lower_string()
-    item_update = ItemUpdate(description=description2)
-    item2 = crud.item.update(db=db, db_obj=item, obj_in=item_update)
-    assert item.id == item2.id
-    assert item.title == item2.title
-    assert item2.description == description2
-    assert item.owner_id == item2.owner_id
+    lecture_update = LectureUpdate(content=description2)
+    lecture2 = crud.lecture.update(db=db, db_obj=lecture_in_db, obj_in=lecture_update)
+    updated_lecture = crud.lecture.get(db=db, id=lecture_in_db.id)
+    assert lecture_in_db.id == lecture2.id
+    assert lecture_in_db.title == lecture2.title
+    assert updated_lecture.content == description2
+    assert lecture_in_db.author_id == lecture2.author_id
 
 
-def test_delete_item(db: Session) -> None:
-    title = random_lower_string()
-    description = random_lower_string()
-    item_in = ItemCreate(title=title, description=description)
-    user = create_random_user(db)
-    item = crud.item.create_with_owner(db=db, obj_in=item_in, owner_id=user.id)
-    item2 = crud.item.remove(db=db, id=item.id)
-    item3 = crud.item.get(db=db, id=item.id)
-    assert item3 is None
-    assert item2.id == item.id
-    assert item2.title == title
-    assert item2.description == description
-    assert item2.owner_id == user.id
+def test_delete_lecture(db: Session, lecture_in_db: LectureInDB) -> None:
+    lecture2 = crud.lecture.remove(db=db, id=lecture_in_db.id)
+    lecture3 = crud.lecture.get(db=db, id=lecture_in_db.id)
+    assert lecture3 is None
+    assert lecture2.id == lecture_in_db.id

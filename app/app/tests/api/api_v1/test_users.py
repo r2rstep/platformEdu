@@ -75,5 +75,5 @@ def test_retrieve_users(
     all_users = r.json()
 
     assert len(all_users) > 1
-    for item in all_users:
-        assert "email" in item
+    for lecture in all_users:
+        assert "email" in lecture

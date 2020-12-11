@@ -2,15 +2,15 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.tests.utils.item import create_random_item
+from app.tests.utils.lecture import create_random_lecture
 
 
-def test_create_item(
+def test_create_lecture(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
     data = {"title": "Foo", "description": "Fighters"}
     response = client.post(
-        f"{settings.API_V1_STR}/items/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/lectures/", headers=superuser_token_headers, json=data,
     )
     assert response.status_code == 200
     content = response.json()
@@ -20,16 +20,16 @@ def test_create_item(
     assert "owner_id" in content
 
 
-def test_read_item(
-    client: TestClient, superuser_token_headers: dict, db: Session
+def test_get_lecture(
+    client: TestClient, db: Session
 ) -> None:
-    item = create_random_item(db)
+    lecture = create_random_lecture(db)
     response = client.get(
-        f"{settings.API_V1_STR}/items/{item.id}", headers=superuser_token_headers,
+        f"{settings.API_V1_STR}/lectures/{lecture.id}"
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["title"] == item.title
-    assert content["description"] == item.description
-    assert content["id"] == item.id
-    assert content["owner_id"] == item.owner_id
+    assert content["title"] == lecture.title
+    assert content["content"] == lecture.content
+    assert content["id"] == str(lecture.id)
+    assert content["author_id"] == str(lecture.author_id)

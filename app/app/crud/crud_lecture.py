@@ -4,16 +4,16 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
-from app.models.item import Item
-from app.schemas.item import ItemCreate, ItemUpdate
+from app.models.lecture import Lecture
+from app.schemas.lecture import LectureCreate, LectureUpdate
 
 
-class CRUDItem(CRUDBase[Item, ItemCreate, ItemUpdate]):
+class CRUDLecture(CRUDBase[Lecture, LectureCreate, LectureUpdate]):
     def create_with_owner(
-        self, db: Session, *, obj_in: ItemCreate, owner_id: int
-    ) -> Item:
+        self, db: Session, *, obj_in: LectureCreate, author_id: int
+    ) -> Lecture:
         obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data, owner_id=owner_id)
+        db_obj = self.model(**obj_in_data, author_id=author_id)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
@@ -21,14 +21,14 @@ class CRUDItem(CRUDBase[Item, ItemCreate, ItemUpdate]):
 
     def get_multi_by_owner(
         self, db: Session, *, owner_id: int, skip: int = 0, limit: int = 100
-    ) -> List[Item]:
+    ) -> List[Lecture]:
         return (
             db.query(self.model)
-            .filter(Item.owner_id == owner_id)
+            .filter(Lecture.owner_id == owner_id)
             .offset(skip)
             .limit(limit)
             .all()
         )
 
 
-item = CRUDItem(Item)
+lecture = CRUDLecture(Lecture)
