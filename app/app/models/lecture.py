@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 
 class LectureType(Base):
-    __tablename__ = 'lectureType'
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, unique=True)
 
@@ -23,7 +22,7 @@ class Lecture(Base):
     content = Column(String)
     author_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), index=True, nullable=False)
     author = relationship("User", back_populates="lectures")
-    type_id = Column(Integer, ForeignKey("lectureType.id"), nullable=False)
+    type_id = Column(Integer, ForeignKey("lecturetype.id"))
     type = relationship("LectureType")
     thumbnail_url = Column(String)
     excerpt = Column(String)

@@ -11,6 +11,7 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
     networks:
       - pg
+      - backend
     ports:
       - "5432:5432"
     deploy:
@@ -47,7 +48,7 @@ services:
       dockerfile: backend.dockerfile
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
-    command: uvicorn --host 0.0.0.0 app.main:app
+    command: bash -c "python app/initial_data.py && uvicorn --host 0.0.0.0 app.main:app"
 
 volumes:
   app-db-data:
