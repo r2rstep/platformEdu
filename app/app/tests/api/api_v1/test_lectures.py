@@ -18,12 +18,12 @@ def superuser(db: Session) -> User:
 
 @pytest.fixture(autouse=True)
 def testcase_teardown(db: Session):
-    yield
     crud.lecture.remove_all(db)
+    yield
 
 
 def test_create_lecture(
-    client: TestClient, superuser_token_headers: dict, db: Session, superuser: User
+        client: TestClient, superuser_token_headers: dict, db: Session, superuser: User
 ) -> None:
     new_lecture = LectureCreate(title='New Lecture')
     response = client.post(
@@ -36,7 +36,7 @@ def test_create_lecture(
 
 
 def test_get_lecture(
-    client: TestClient, db: Session
+        client: TestClient, db: Session
 ) -> None:
     lecture = create_random_lecture(db)
     response = client.get(
@@ -60,8 +60,40 @@ def test_get_all_lectures(client: TestClient, db: Session):
     )
     assert response.status_code == 200
     lectures = Lectures(**response.json())
-    assert lectures.total == num_lectures
-    assert lectures.count == num_lectures
-    lectures_ids = set(lec.id for lec in lectures.items)
-    assert len(lectures_ids) == num_lectures
+    _check_lectures_response(lectures_in_db, num_lectures, num_lectures, lectures)
+
+
+def test_get_lectures_paginated(client: TestClient, db: Session):
+    num_lectures = 21
+    limit = 10
+    lectures_in_db: List[Lecture] = []
+    for _ in range(0, num_lectures):
+        lectures_in_db.append(create_random_lecture(db))
+    response = client.get(
+        f"{settings.API_V1_STR}/lectures?limit={limit}"
+    )
+    assert response.status_code == 200
+    lectures = Lectures(**response.json())
+    _check_lectures_response(lectures_in_db[:limit],
+                             limit,
+                             num_lectures,
+                             lectures)
+    first_page_lectures_ids = set(lec.id for lec in lectures.items)
+
+    response = client.get(lectures.links.next)
+    assert response.status_code == 200
+    lectures = Lectures(**response.json())
+    _check_lectures_response(lectures_in_db[limit:20], limit, num_lectures, lectures)
+
+    response = client.get(lectures.links.previous)
+    lectures = Lectures(**response.json())
+    assert set(lec.id for lec in lectures.items) == first_page_lectures_ids
+
+
+def _check_lectures_response(lectures_in_db, limit, num_lectures, response):
+    assert response.total == num_lectures
+    assert response.count == limit
+    lectures_ids = set(lec.id for lec in response.items)
+    assert len(lectures_ids) == limit
     assert lectures_ids == set(lec.id for lec in lectures_in_db)
+    return lectures_ids

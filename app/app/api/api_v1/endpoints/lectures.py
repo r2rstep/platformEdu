@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import UUID4
 from sqlalchemy.orm import Session
 
@@ -12,15 +12,15 @@ router = APIRouter()
 
 
 @router.get("/", response_model=schemas.lecture.Lectures)
-def list_lectures(db: Session = Depends(deps.get_db)) -> Any:
-    """
-    Retrieve lectures.
-    """
-    lectures = crud.lecture.get_multi(db)
-    resp = schemas.Lectures(total=len(lectures),
-                            count=len(lectures),
-                            items=lectures)
-    return resp
+def list_lectures(request: Request,
+                  limit: int = 100,
+                  cursor: str = '',
+                  db: Session = Depends(deps.get_db)) -> Any:
+    return lecture_logic.build_lectures_response(db,
+                                                 '{api_base}?cursor={{cursor}}&limit={{limit}}'.format(
+                                                     api_base=request.url.path.rstrip('/')),
+                                                 cursor,
+                                                 limit)
 
 
 @router.post("/", response_model=schemas.Lecture)

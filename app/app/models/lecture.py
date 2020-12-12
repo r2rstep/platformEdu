@@ -26,6 +26,6 @@ class Lecture(Base):
     type = relationship("LectureType")
     thumbnail_url = Column(String)
     excerpt = Column(String)
-    uploaded_at = Column(DateTime, nullable=False)
+    uploaded_at = Column(DateTime, nullable=False, index=True)
     pdf_download_url = Column(String)
     slug = Column(String, nullable=False)

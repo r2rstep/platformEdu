@@ -16,8 +16,6 @@ from app.tests.utils.utils import get_superuser_token_headers
 def db() -> Generator:
     session = SessionLocal()
     yield session
-    crud.lecture.remove_all(session)
-    crud.user.remove_all(session, leave_superusers=True)
 
 
 @pytest.fixture(scope="module")

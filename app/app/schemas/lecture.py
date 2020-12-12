@@ -48,7 +48,14 @@ class LectureInDB(LectureInDBBase):
     author_id: UUID4
 
 
+class LecturesLinks(BaseModel):
+    self: str
+    previous: str = None
+    next: str = None
+
+
 class Lectures(BaseModel):
     total: int
     count: int
     items: List[Lecture]
+    links: LecturesLinks
