@@ -1,5 +1,4 @@
 from typing import Any, Dict, Optional, Union
-import uuid
 
 from sqlalchemy.orm import Session
 
@@ -18,8 +17,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
         db_obj = User(
-            id=uuid.uuid4(),
-            name=obj_in.name
+            name=obj_in.name,
+            hashed_password=get_password_hash(obj_in.password),
+            is_superuser=obj_in.is_superuser,
         )
         db.add(db_obj)
         db.commit()
@@ -39,8 +39,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             update_data["hashed_password"] = hashed_password
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
-    def authenticate(self, db: Session, *, email: str, password: str) -> Optional[User]:
-        user = self.get_by_email(db, email=email)
+    def authenticate(self, db: Session, *, name: str, password: str) -> Optional[User]:
+        user = self.get_by_name(db, name=name)
         if not user:
             return None
         if not verify_password(password, user.hashed_password):

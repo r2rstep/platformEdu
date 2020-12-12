@@ -10,10 +10,12 @@ class UserBase(BaseModel):
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
     social_urls: List[str] = None
+    is_superuser: Optional[bool] = False
 
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
+    name: str
     password: str
 
 
@@ -23,7 +25,9 @@ class UserUpdate(UserBase):
 
 
 class UserInDBBase(UserBase):
-    id: Optional[UUID4] = None
+    id: UUID4
+    name: str
+    is_active: bool
 
     class Config:
         orm_mode = True
