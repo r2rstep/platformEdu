@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
+from pydantic import UUID4
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -9,7 +10,7 @@ from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_lower_string
 
 
-def create_random_lecture(db: Session, *, author_id: Optional[int] = None) -> models.Lecture:
+def create_random_lecture(db: Session, *, author_id: Optional[UUID4] = None) -> models.Lecture:
     if author_id is None:
         user = create_random_user(db)
         author_id = user.id

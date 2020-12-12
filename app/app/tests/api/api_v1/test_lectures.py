@@ -1,5 +1,7 @@
 from typing import List
+from uuid import uuid4
 
+from fastapi import status
 from fastapi.testclient import TestClient
 import pytest
 from sqlalchemy.orm import Session
@@ -8,18 +10,13 @@ from app.core.config import settings
 from app import crud
 from app.schemas.user import User
 from app.schemas.lecture import LectureCreate, Lecture, Lectures
+from app.tests.utils.user import create_random_user
 from app.tests.utils.lecture import create_random_lecture
 
 
 @pytest.fixture
 def superuser(db: Session) -> User:
     yield crud.user.get_by_name(db, name=settings.FIRST_SUPERUSER)
-
-
-@pytest.fixture(autouse=True)
-def testcase_teardown(db: Session):
-    crud.lecture.remove_all(db)
-    yield
 
 
 def test_create_lecture(
@@ -35,40 +32,45 @@ def test_create_lecture(
     assert created_lecture.author_id == superuser.id
 
 
-def test_get_lecture(
-        client: TestClient, db: Session
-) -> None:
-    lecture = create_random_lecture(db)
+@pytest.fixture(scope='module')
+def authors(db: Session) -> User:
+    crud.user.remove_all(db, leave_superusers=True)
+    yield [create_random_user(db) for _ in range(0, 3)]
+
+
+@pytest.fixture(scope='module')
+def lectures_in_db(db: Session, authors: List[User]):
+    crud.lecture.remove_all(db)
+    num_lectures = 21
+    lectures_in_db_: List[Lecture] = []
+    for lec_index in range(0, num_lectures):
+        lectures_in_db_.append(create_random_lecture(db, author_id=authors[lec_index % len(authors)].id))
+    yield lectures_in_db_
+
+
+def test_get_lecture(client: TestClient, lectures_in_db: List[Lecture]) -> None:
     response = client.get(
-        f"{settings.API_V1_STR}/lectures/{lecture.id}"
+        f"{settings.API_V1_STR}/lectures/{lectures_in_db[1].id}"
     )
     assert response.status_code == 200
     content = response.json()
-    assert content["title"] == lecture.title
-    assert content["content"] == lecture.content
-    assert content["id"] == str(lecture.id)
-    assert content["author_id"] == str(lecture.author_id)
+    assert content["title"] == lectures_in_db[1].title
+    assert content["content"] == lectures_in_db[1].content
+    assert content["id"] == str(lectures_in_db[1].id)
+    assert content["author_id"] == str(lectures_in_db[1].author_id)
 
 
-def test_get_all_lectures(client: TestClient, db: Session):
-    num_lectures = 20
-    lectures_in_db: List[Lecture] = []
-    for _ in range(0, num_lectures):
-        lectures_in_db.append(create_random_lecture(db))
+def test_get_all_lectures(client: TestClient, lectures_in_db: List[Lecture]):
     response = client.get(
         f"{settings.API_V1_STR}/lectures"
     )
     assert response.status_code == 200
     lectures = Lectures(**response.json())
-    _check_lectures_response(lectures_in_db, num_lectures, num_lectures, lectures)
+    _check_lectures_response(lectures_in_db, len(lectures_in_db), len(lectures_in_db), lectures)
 
 
-def test_get_lectures_paginated(client: TestClient, db: Session):
-    num_lectures = 21
+def test_get_lectures_paginated(client: TestClient, lectures_in_db: List[Lecture]):
     limit = 10
-    lectures_in_db: List[Lecture] = []
-    for _ in range(0, num_lectures):
-        lectures_in_db.append(create_random_lecture(db))
     response = client.get(
         f"{settings.API_V1_STR}/lectures?limit={limit}"
     )
@@ -76,18 +78,30 @@ def test_get_lectures_paginated(client: TestClient, db: Session):
     lectures = Lectures(**response.json())
     _check_lectures_response(lectures_in_db[:limit],
                              limit,
-                             num_lectures,
+                             len(lectures_in_db),
                              lectures)
     first_page_lectures_ids = set(lec.id for lec in lectures.items)
 
     response = client.get(lectures.links.next)
     assert response.status_code == 200
     lectures = Lectures(**response.json())
-    _check_lectures_response(lectures_in_db[limit:20], limit, num_lectures, lectures)
+    _check_lectures_response(lectures_in_db[limit:20], limit, len(lectures_in_db), lectures)
 
     response = client.get(lectures.links.previous)
     lectures = Lectures(**response.json())
     assert set(lec.id for lec in lectures.items) == first_page_lectures_ids
+
+
+def test_get_lectures_incorrect_filter(client: TestClient):
+    response = client.get(
+        f"{settings.API_V1_STR}/lectures?filter[incorrect_field]={uuid4()}"
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    response = client.get(
+        f"{settings.API_V1_STR}/lectures?filter[author_id]=not_uuid"
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def _check_lectures_response(lectures_in_db, limit, num_lectures, response):

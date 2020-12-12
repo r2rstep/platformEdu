@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List
 
 from fastapi.encoders import jsonable_encoder
+from pydantic import UUID4
 from sqlalchemy.orm import Session
 
 from .base import CRUDBase
@@ -12,7 +13,7 @@ from app.schemas.lecture import LectureCreate, LectureUpdate
 
 class CRUDLecture(CRUDBase[Lecture, LectureCreate, LectureUpdate]):
     def create_with_author(
-        self, db: Session, *, obj_in: LectureCreate, author_id: int
+        self, db: Session, *, obj_in: LectureCreate, author_id: UUID4
     ) -> Lecture:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data, author_id=author_id)

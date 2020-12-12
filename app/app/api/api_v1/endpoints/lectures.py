@@ -1,7 +1,9 @@
+import re
 from typing import Any
+import urllib.parse
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import UUID4
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import UUID4, BaseModel, ValidationError
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -11,11 +13,23 @@ from app.logic import lecture as lecture_logic
 router = APIRouter()
 
 
+class GetFilters(BaseModel):
+    author_id: UUID4
+
+
 @router.get("/", response_model=schemas.lecture.Lectures)
 def list_lectures(request: Request,
                   limit: int = 100,
                   cursor: str = '',
                   db: Session = Depends(deps.get_db)) -> Any:
+    filters_regex = re.compile(r'filter\[(?P<key>\w+)\]=(?P<value>[\w\-]+)')
+    filters_parsed = re.match(filters_regex, urllib.parse.unquote(str(request.query_params)))
+    filters = None
+    if filters_parsed:
+        try:
+            filters = GetFilters(**{filters_parsed['key']: filters_parsed['value']})
+        except ValidationError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
     return lecture_logic.build_lectures_response(db,
                                                  '{api_base}?cursor={{cursor}}&limit={{limit}}'.format(
                                                      api_base=request.url.path.rstrip('/')),
