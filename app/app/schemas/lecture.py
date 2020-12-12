@@ -8,7 +8,6 @@ from pydantic import BaseModel, UUID4
 class LectureBase(BaseModel):
     title: Optional[str]
     content: Optional[str] = None
-    author_id: Optional[UUID4] = None
     type_id: Optional[int] = None
     thumbnail_url: Optional[str] = None
     excerpt: Optional[str] = None
@@ -20,9 +19,6 @@ class LectureBase(BaseModel):
 # Properties to receive on item creation
 class LectureCreate(LectureBase):
     title: str
-    author_id: UUID4
-    uploaded_at: datetime
-    slug: str
 
 
 # Properties to receive on item update
@@ -34,6 +30,7 @@ class LectureUpdate(LectureBase):
 class LectureInDBBase(LectureBase):
     id: UUID4
     title: str
+    author_id: UUID4
     uploaded_at: datetime
     slug: str
 

@@ -9,7 +9,7 @@ from app.schemas.lecture import LectureCreate, LectureUpdate
 
 
 class CRUDLecture(CRUDBase[Lecture, LectureCreate, LectureUpdate]):
-    def create_with_owner(
+    def create_with_author(
         self, db: Session, *, obj_in: LectureCreate, author_id: int
     ) -> Lecture:
         obj_in_data = jsonable_encoder(obj_in)

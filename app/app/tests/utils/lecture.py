@@ -15,6 +15,6 @@ def create_random_lecture(db: Session, *, author_id: Optional[int] = None) -> mo
         author_id = user.id
     title = random_lower_string()
     description = random_lower_string()
-    lecture_in = LectureCreate(title=title, author_id=author_id, uploaded_at=datetime.utcnow(),
+    lecture_in = LectureCreate(title=title, uploaded_at=datetime.utcnow(),
                                excerpt=description, slug=random_lower_string())
-    return crud.lecture.create(db=db, obj_in=lecture_in)
+    return crud.lecture.create_with_author(db=db, obj_in=lecture_in, author_id=author_id)

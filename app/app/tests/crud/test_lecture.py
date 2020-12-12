@@ -18,17 +18,17 @@ def user(db: Session) -> UserInDB:
 
 
 @pytest.fixture(scope='module')
-def lecture(db: Session, user: UserInDB) -> LectureCreate:
+def lecture(db: Session) -> LectureCreate:
     title = random_lower_string()
     content = random_lower_string()
-    new_lecture_ = LectureCreate(title=title, content=content, author_id=user.id, uploaded_at=datetime.utcnow(),
+    new_lecture_ = LectureCreate(title=title, content=content, uploaded_at=datetime.utcnow(),
                                  slug=random_lower_string())
     yield new_lecture_
 
 
 @pytest.fixture(scope='module')
-def lecture_in_db(db: Session, lecture: LectureCreate) -> LectureInDB:
-    lecture_in_db = crud.lecture.create(db=db, obj_in=lecture)
+def lecture_in_db(db: Session, lecture: LectureCreate, user: UserInDB) -> LectureInDB:
+    lecture_in_db = crud.lecture.create_with_author(db=db, obj_in=lecture, author_id=user.id)
     yield lecture_in_db
     if crud.lecture.get(db=db, id=lecture_in_db.id):
         crud.lecture.remove(db, id=lecture_in_db.id)

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.logic import lecture as lecture_logic
 
 router = APIRouter()
 
@@ -36,7 +37,9 @@ def create_lecture(
     lecture_in: schemas.LectureCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    lecture = crud.lecture.create_with_owner(db=db, obj_in=lecture_in, author_id=current_user.id)
+    lecture_in.slug = lecture_logic.create_slug(lecture_in.title)
+    lecture_in.uploaded_at = lecture_logic.get_upload_time()
+    lecture = crud.lecture.create_with_author(db=db, obj_in=lecture_in, author_id=current_user.id)
     return lecture
 
 
