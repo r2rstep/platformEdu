@@ -53,5 +53,13 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def is_superuser(self, user: User) -> bool:
         return user.is_superuser
 
+    def remove_all(self, db: Session, *, leave_superusers: bool = False):
+        if not leave_superusers:
+            super(CRUDUser, self).remove_all(db)
+        else:
+            for obj in db.query(self.model).filter(not User.is_superuser):
+                db.delete(obj)
+            db.commit()
+
 
 user = CRUDUser(User)

@@ -64,3 +64,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.delete(obj)
         db.commit()
         return obj
+
+    def remove_all(self, db: Session):
+        for obj in db.query(self.model).all():
+            db.delete(obj)
+        db.commit()
