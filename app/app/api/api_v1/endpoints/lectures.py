@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import UUID4
@@ -11,23 +11,16 @@ from app.logic import lecture as lecture_logic
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.Lecture])
-def list_lectures(
-    db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
+@router.get("/", response_model=schemas.lecture.Lectures)
+def list_lectures(db: Session = Depends(deps.get_db)) -> Any:
     """
     Retrieve lectures.
     """
-    if crud.user.is_superuser(current_user):
-        lectures = crud.lecture.get_multi(db, skip=skip, limit=limit)
-    else:
-        lectures = crud.lecture.get_multi_by_owner(
-            db=db, owner_id=current_user.id, skip=skip, limit=limit
-        )
-    return lectures
+    lectures = crud.lecture.get_multi(db)
+    resp = schemas.Lectures(total=len(lectures),
+                            count=len(lectures),
+                            items=lectures)
+    return resp
 
 
 @router.post("/", response_model=schemas.Lecture)

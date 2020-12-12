@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, UUID4
 
@@ -46,3 +46,9 @@ class Lecture(LectureInDBBase):
 # Properties properties stored in DB
 class LectureInDB(LectureInDBBase):
     author_id: UUID4
+
+
+class Lectures(BaseModel):
+    total: int
+    count: int
+    items: List[Lecture]
