@@ -1,5 +1,6 @@
+import enum
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel, UUID4, conint
 
@@ -25,7 +26,7 @@ class LectureCreate(LectureBase):
 
 # Properties to receive on item update
 class LectureUpdate(LectureBase):
-    pass
+    lecture_rating_average: Optional[float] = None
 
 
 # Properties shared by models stored in DB
@@ -47,15 +48,35 @@ class Lecture(LectureInDBBase):
 
 # Properties properties stored in DB
 class LectureInDB(LectureInDBBase):
-    author_id: UUID4
+    lecture_rating_average: float
 
 
 Lectures = Elements[Lecture]
 
 
+class MinLectureRatingShortname(enum.Enum):
+    all_lectures_average = 'all lectures average'
+
+
+class LectureMinRatingBase(BaseModel):
+    shortname: Optional[MinLectureRatingShortname] = None
+    ratings_sum: Optional[float] = None
+    num_ratings: Optional[int] = None
+    min_rating_value: Optional[float] = None
+
+
+class LectureMinRatingCreate(LectureMinRatingBase):
+    shortname: MinLectureRatingShortname
+
+
+class LectureMinRatingUpdate(LectureMinRatingBase):
+    pass
+
+
 class ReviewBase(BaseModel):
     added_at: Optional[datetime] = None
     user_id: Optional[UUID4] = None
+    lecture_id: Optional[UUID4] = None
     text: Optional[str] = None
     rating: Optional[conint(ge=0, le=10)] = None
 
@@ -64,6 +85,7 @@ class ReviewInDbBase(ReviewBase):
     id: UUID4
     added_at: datetime
     user_id: UUID4
+    lecture_id: UUID4
 
 
 class ReviewInDb(ReviewInDbBase):
@@ -75,9 +97,7 @@ class ReviewUpdate(ReviewBase):
 
 
 class ReviewCreate(ReviewBase):
-    id: UUID4
-    added_at: datetime
-    user_id: UUID4
+    pass
 
 
 class Review(ReviewInDbBase):

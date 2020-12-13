@@ -3,12 +3,13 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import UUID4, BaseModel, validator
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, Query
 
 from .base import CRUDBase
 from .order_direction import OrderDirection
-from app.models.lecture import Lecture
-from app.schemas.lecture import LectureCreate, LectureUpdate
+from app.models.lecture import Lecture, LectureMinRating
+from app.schemas.lecture import LectureCreate, LectureUpdate, LectureMinRatingCreate, LectureMinRatingUpdate
 
 
 class LectureQueryFilters(BaseModel):
@@ -55,7 +56,7 @@ class CRUDLecture(CRUDBase[Lecture, LectureCreate, LectureUpdate]):
         order_by = Lecture.uploaded_at.asc()
         if order_direction == OrderDirection.descending:
             order_by = Lecture.uploaded_at.desc()
-        query = db.query(self.model)
+        query = db.query(self.model).join(Lecture.min_rating, isouter=True)
         if filters:
             query = query.filter(*filters)
         return query.order_by(order_by).limit(limit)
@@ -64,7 +65,8 @@ class CRUDLecture(CRUDBase[Lecture, LectureCreate, LectureUpdate]):
                      upload_time_included: datetime,
                      order_direction: OrderDirection,
                      url_filters: LectureQueryFilters = None) -> List[Query]:
-        filter_query: List[Query] = []
+        filter_query: List[Query] = [or_(Lecture.rating_average > LectureMinRating.min_rating_value,
+                                         Lecture.min_rating_id == None)]
         if upload_time_included:
             if order_direction == OrderDirection.descending:
                 filter_query.append(Lecture.uploaded_at <= upload_time_included)
@@ -77,4 +79,9 @@ class CRUDLecture(CRUDBase[Lecture, LectureCreate, LectureUpdate]):
         return filter_query
 
 
+class CRUDLectureMinRating(CRUDBase[LectureMinRating, LectureMinRatingCreate, LectureMinRatingUpdate]):
+    pass
+
+
 lecture = CRUDLecture(Lecture)
+lecture_min_rating = CRUDLectureMinRating(LectureMinRating)

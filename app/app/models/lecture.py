@@ -30,8 +30,10 @@ class Lecture(Base):
     pdf_download_url = Column(String)
     slug = Column(String, nullable=False)
     reviews = relationship('Review')
-    lecture_min_rating_id = Column(Integer, ForeignKey('lectureminrating.id'))
-    lecture_min_rating = relationship('LectureMinRating')
+    # number of decimal places should be limited to e.g. 2 to enable index on that column
+    rating_average = Column(Numeric(asdecimal=False))
+    min_rating_id = Column(Integer, ForeignKey('lectureminrating.id'))
+    min_rating = relationship('LectureMinRating')
 
 
 class Review(Base):
@@ -46,11 +48,11 @@ class Review(Base):
 
 class LectureMinRating(Base):
     id = Column(Integer, primary_key=True, index=True)
-    shortname = Column(String, unique=True)
+    shortname = Column(String, unique=True, nullable=False)
     ratings_sum = Column(Numeric(asdecimal=False))
     num_ratings = Column(Integer)
     # rating_sum and num_ratings should probably be exported to a separate table with more lectures stats
     # to enable more options for calculating min_rating_value (e.g. to show only lectures in top X rating)
     min_rating_value = Column(Integer)
     min_rating_per_user = relationship('User', back_populates='lecture_min_rating')
-    min_rating_per_lecture = relationship('Lecture', back_populates='lecture_min_rating')
+    min_rating_per_lecture = relationship('Lecture', back_populates='min_rating')

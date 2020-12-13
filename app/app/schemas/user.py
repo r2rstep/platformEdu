@@ -2,6 +2,8 @@ from typing import Optional, List
 
 from pydantic import BaseModel, UUID4
 
+from .lecture import MinLectureRatingShortname
+
 
 # Shared properties
 class UserBase(BaseModel):
@@ -17,11 +19,13 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     name: str
     password: str
+    min_lecture_rating_shortname: Optional[MinLectureRatingShortname] = None
 
 
 # Properties to receive via API on update
 class UserUpdate(UserBase):
     password: Optional[str] = None
+    min_lecture_rating_shortname: Optional[MinLectureRatingShortname] = None
 
 
 class UserInDBBase(UserBase):
@@ -35,9 +39,10 @@ class UserInDBBase(UserBase):
 
 # Additional properties to return via API
 class User(UserInDBBase):
-    pass
+    min_lecture_rating_shortname: Optional[MinLectureRatingShortname] = None
 
 
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):
     hashed_password: str
+    min_lecture_rating_id: Optional[int] = None
