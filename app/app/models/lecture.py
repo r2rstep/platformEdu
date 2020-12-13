@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 import uuid
 
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, NUMERIC
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Numeric
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -30,6 +30,8 @@ class Lecture(Base):
     pdf_download_url = Column(String)
     slug = Column(String, nullable=False)
     reviews = relationship('Review')
+    lecture_min_rating_id = Column(Integer, ForeignKey('lectureminrating.id'))
+    lecture_min_rating = relationship('LectureMinRating')
 
 
 class Review(Base):
@@ -45,9 +47,10 @@ class Review(Base):
 class LectureMinRating(Base):
     id = Column(Integer, primary_key=True, index=True)
     shortname = Column(String, unique=True)
-    ratings_sum = Column(NUMERIC(asdecimal=False))
+    ratings_sum = Column(Numeric(asdecimal=False))
     num_ratings = Column(Integer)
     # rating_sum and num_ratings should probably be exported to a separate table with more lectures stats
     # to enable more options for calculating min_rating_value (e.g. to show only lectures in top X rating)
     min_rating_value = Column(Integer)
     min_rating_per_user = relationship('User', back_populates='lecture_min_rating')
+    min_rating_per_lecture = relationship('Lecture', back_populates='lecture_min_rating')
