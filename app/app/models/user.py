@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 import uuid
 
-from sqlalchemy import Column, String, Text, ARRAY, Boolean
+from sqlalchemy import Column, String, Text, ARRAY, Boolean, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -22,3 +22,5 @@ class User(Base):
     lectures = relationship("Lecture", back_populates="author")
     is_superuser = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+    lecture_min_rating_id = Column(Integer, ForeignKey('lectureminrating.id'))
+    lecture_min_rating = relationship('LectureMinRating')
