@@ -18,7 +18,8 @@ def get_upload_time() -> datetime:
 def build_lectures_response(db: Session,
                             url_template: str,
                             cursor: str,  # would hashing the cursor give any benefit (e.g. security)?
-                            limit: int):
+                            limit: int,
+                            filters: crud.LectureQueryFilters):
     def _build_links():
         links = LecturesLinks(self=url_template.format(cursor=cursor, limit=limit))
 
@@ -31,19 +32,22 @@ def build_lectures_response(db: Session,
                                                  limit=limit)
         return links
 
-    lectures_in_db = crud.lecture.get_sorted_by_upload_time(
+    lectures_in_db = crud.lecture.build_db_query_for_get(
         db,
-        order_direction=OrderDirection.ascending,
-        limit=limit + 1,
-        upload_time_included=cursor
-    )
+        upload_time_included=cursor,
+        limit=limit+1,
+        query_filters=filters,
+        order_direction=OrderDirection.ascending
+    ).all()
+
     current_page_lectures = lectures_in_db[:-1] if len(lectures_in_db) > limit else lectures_in_db
     next_page_first_lecture = lectures_in_db[-1] if len(lectures_in_db) > limit else None
-    previous_page_lectures = crud.lecture.get_sorted_by_upload_time(
+    previous_page_lectures = crud.lecture.build_db_query_for_get(
         db,
         order_direction=OrderDirection.descending,
         limit=11,
-        upload_time_included=current_page_lectures[0].uploaded_at)
+        upload_time_included=current_page_lectures[0].uploaded_at,
+        query_filters=filters).all()
 
     return Lectures(total=crud.lecture.count(db),
                     count=len(current_page_lectures),

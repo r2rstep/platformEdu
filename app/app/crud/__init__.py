@@ -1,4 +1,4 @@
-from .crud_lecture import lecture
+from .crud_lecture import lecture, LectureQueryFilters
 from .crud_user import user
 
 # For a new basic set of CRUD operations you could just do

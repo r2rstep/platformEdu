@@ -1,14 +1,25 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
-from pydantic import UUID4
-from sqlalchemy.orm import Session
+from pydantic import UUID4, BaseModel, validator
+from sqlalchemy.orm import Session, Query
 
 from .base import CRUDBase
 from .order_direction import OrderDirection
 from app.models.lecture import Lecture
 from app.schemas.lecture import LectureCreate, LectureUpdate
+
+
+class LectureQueryFilters(BaseModel):
+    author_id: Optional[UUID4] = None
+
+    @validator('author_id', pre=True)
+    def author_id_needs_to_be_uuid4(cls, value: str) -> Optional[UUID4]:
+        return UUID4(value)
+
+    class Config:
+        validate_all = True
 
 
 class CRUDLecture(CRUDBase[Lecture, LectureCreate, LectureUpdate]):
@@ -33,26 +44,37 @@ class CRUDLecture(CRUDBase[Lecture, LectureCreate, LectureUpdate]):
             .all()
         )
 
-    def get_sorted_by_upload_time(self,
-                                  db: Session,
-                                  *,
-                                  order_direction: OrderDirection,
-                                  limit: int,
-                                  upload_time_included: datetime = None) -> Lecture:
-        # this could be probably optimized by using dogpile cache
+    def build_db_query_for_get(self,
+                               db: Session,
+                               *,
+                               upload_time_included: datetime,
+                               limit: int,
+                               query_filters: LectureQueryFilters,
+                               order_direction: OrderDirection):
+        filters = self._get_filters(upload_time_included, order_direction, query_filters)
+        order_by = Lecture.uploaded_at.asc()
         if order_direction == OrderDirection.descending:
-            if upload_time_included:
-                filter_query = Lecture.uploaded_at <= upload_time_included
             order_by = Lecture.uploaded_at.desc()
-        else:
-            if upload_time_included:
-                filter_query = Lecture.uploaded_at >= upload_time_included
-            order_by = Lecture.uploaded_at.asc()
-
         query = db.query(self.model)
+        if filters:
+            query = query.filter(*filters)
+        return query.order_by(order_by).limit(limit)
+
+    def _get_filters(self,
+                     upload_time_included: datetime,
+                     order_direction: OrderDirection,
+                     url_filters: LectureQueryFilters = None) -> List[Query]:
+        filter_query: List[Query] = []
         if upload_time_included:
-            query = query.filter(filter_query)
-        return query.order_by(order_by).limit(limit).all()
+            if order_direction == OrderDirection.descending:
+                filter_query.append(Lecture.uploaded_at <= upload_time_included)
+            else:
+                filter_query.append(Lecture.uploaded_at >= upload_time_included)
+
+        if url_filters and url_filters.author_id:
+            filter_query.append(Lecture.author_id == url_filters.author_id)
+
+        return filter_query
 
 
 lecture = CRUDLecture(Lecture)
