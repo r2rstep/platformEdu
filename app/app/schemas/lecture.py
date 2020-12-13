@@ -3,6 +3,8 @@ from typing import Optional, List
 
 from pydantic import BaseModel, UUID4, conint
 
+from .generic import Elements
+
 
 # Shared properties
 class LectureBase(BaseModel):
@@ -48,17 +50,7 @@ class LectureInDB(LectureInDBBase):
     author_id: UUID4
 
 
-class LecturesLinks(BaseModel):
-    self: str
-    previous: str = None
-    next: str = None
-
-
-class Lectures(BaseModel):
-    total: int
-    count: int
-    items: List[Lecture]
-    links: LecturesLinks
+Lectures = Elements[Lecture]
 
 
 class ReviewBase(BaseModel):
@@ -90,3 +82,6 @@ class ReviewCreate(ReviewBase):
 
 class Review(ReviewInDbBase):
     pass
+
+
+Reviews = Elements[Review]

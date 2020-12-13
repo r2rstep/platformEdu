@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 
 from app import crud
 from app.crud.order_direction import OrderDirection
-from app.schemas.lecture import Lectures, LecturesLinks
+from app.schemas.generic import PaginationLinks
+from app.schemas.lecture import Lectures
 
 
 def create_slug(title: str) -> str:
@@ -21,9 +22,9 @@ def build_lectures_response(db: Session,
                             limit: int,
                             filters: crud.LectureQueryFilters):
     def _build_links():
-        links = LecturesLinks(self=url_template.format(cursor=cursor,
-                                                       limit=limit,
-                                                       author_id=filters.author_id if filters else ''))
+        links = PaginationLinks(self=url_template.format(cursor=cursor,
+                                                         limit=limit,
+                                                         author_id=filters.author_id if filters else ''))
 
         if next_page_first_lecture:
             links.next = url_template.format(cursor=next_page_first_lecture.uploaded_at,
@@ -39,7 +40,7 @@ def build_lectures_response(db: Session,
     lectures_in_db = crud.lecture.build_db_query_for_get(
         db,
         upload_time_included=cursor,
-        limit=limit+1,
+        limit=limit + 1,
         query_filters=filters,
         order_direction=OrderDirection.ascending
     ).all()
