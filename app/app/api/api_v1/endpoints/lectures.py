@@ -25,7 +25,9 @@ def list_lectures(request: Request,
         try:
             filters = crud.LectureQueryFilters(**{filters_parsed['key']: filters_parsed['value']})
         except ValidationError:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail='Either unsupported field was given in filter or the value was of '
+                                       'incorrect type. Filter supported fields: author_id')
     return lecture_logic.build_lectures_response(db,
                                                  _build_url_template(request),
                                                  cursor,
