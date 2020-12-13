@@ -29,3 +29,14 @@ class Lecture(Base):
     uploaded_at = Column(DateTime, nullable=False, index=True)
     pdf_download_url = Column(String)
     slug = Column(String, nullable=False)
+    reviews = relationship('Review')
+
+
+class Review(Base):
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    lecture_id = Column(UUID(as_uuid=True), ForeignKey('lecture.id'))
+    lecture = relationship('Lecture', back_populates='reviews')
+    added_at = Column(DateTime, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    text = Column(String)
+    rating = Column(Integer)

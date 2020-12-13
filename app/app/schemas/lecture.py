@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel, UUID4, conint
 
 
 # Shared properties
@@ -59,3 +59,34 @@ class Lectures(BaseModel):
     count: int
     items: List[Lecture]
     links: LecturesLinks
+
+
+class ReviewBase(BaseModel):
+    added_at: Optional[datetime] = None
+    user_id: Optional[UUID4] = None
+    text: Optional[str] = None
+    rating: Optional[conint(ge=0, le=10)] = None
+
+
+class ReviewInDbBase(ReviewBase):
+    id: UUID4
+    added_at: datetime
+    user_id: UUID4
+
+
+class ReviewInDb(ReviewInDbBase):
+    pass
+
+
+class ReviewUpdate(ReviewBase):
+    pass
+
+
+class ReviewCreate(ReviewBase):
+    id: UUID4
+    added_at: datetime
+    user_id: UUID4
+
+
+class Review(ReviewInDbBase):
+    pass
