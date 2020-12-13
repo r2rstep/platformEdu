@@ -47,10 +47,10 @@ class CRUDLecture(CRUDBase[Lecture, LectureCreate, LectureUpdate]):
     def build_db_query_for_get(self,
                                db: Session,
                                *,
-                               upload_time_included: datetime,
-                               limit: int,
-                               query_filters: LectureQueryFilters,
-                               order_direction: OrderDirection):
+                               upload_time_included: datetime = None,
+                               limit: int = None,
+                               query_filters: LectureQueryFilters = None,
+                               order_direction: OrderDirection = None):
         filters = self._get_filters(upload_time_included, order_direction, query_filters)
         order_by = Lecture.uploaded_at.asc()
         if order_direction == OrderDirection.descending:

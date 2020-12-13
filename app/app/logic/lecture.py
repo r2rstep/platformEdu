@@ -49,7 +49,12 @@ def build_lectures_response(db: Session,
         upload_time_included=current_page_lectures[0].uploaded_at,
         query_filters=filters).all()
 
-    return Lectures(total=crud.lecture.count(db),
+    all_lectures_for_given_filters_query = crud.lecture.build_db_query_for_get(
+        db,
+        query_filters=filters
+    )
+
+    return Lectures(total=all_lectures_for_given_filters_query.count(),
                     count=len(current_page_lectures),
                     items=current_page_lectures,
                     links=_build_links())
