@@ -118,6 +118,34 @@ def test_get_lectures_by_author(client: TestClient, lectures_in_db: List[Lecture
                              lectures)
 
 
+def test_get_lectures_by_author_paginated(client: TestClient, lectures_in_db: List[Lecture], authors: List[User]):
+    requested_author_id = authors[1].id
+    limit = 3
+    response = client.get(
+        f"{settings.API_V1_STR}/lectures?filter[author_id]={requested_author_id}&limit={limit}"
+    )
+    assert response.status_code == 200
+    lectures = Lectures(**response.json())
+    requested_author_lectures = [lec for lec in lectures_in_db if lec.author_id == requested_author_id]
+    _check_lectures_response(requested_author_lectures[:limit],
+                             limit,
+                             len(requested_author_lectures),
+                             lectures)
+    first_page_lectures_ids = set(lec.id for lec in lectures.items)
+
+    response = client.get(lectures.links.next)
+    assert response.status_code == 200
+    lectures = Lectures(**response.json())
+    _check_lectures_response(requested_author_lectures[limit:(limit * 2)],
+                             limit,
+                             len(requested_author_lectures),
+                             lectures)
+
+    response = client.get(lectures.links.previous)
+    lectures = Lectures(**response.json())
+    assert set(lec.id for lec in lectures.items) == first_page_lectures_ids
+
+
 def _check_lectures_response(lectures_in_db, limit, num_lectures, response):
     assert response.total == num_lectures
     assert response.count == limit

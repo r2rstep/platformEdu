@@ -18,7 +18,7 @@ def list_lectures(request: Request,
                   limit: int = 100,
                   cursor: str = '',
                   db: Session = Depends(deps.get_db)) -> Any:
-    filters_regex = re.compile(r'filter\[(?P<key>\w+)\]=(?P<value>[\w\-]+)')
+    filters_regex = re.compile(r'.*filter\[(?P<key>\w+)\]=(?P<value>[\w\-]+).*')
     filters_parsed = re.match(filters_regex, urllib.parse.unquote(str(request.query_params)))
     filters = None
     if filters_parsed:
@@ -27,11 +27,15 @@ def list_lectures(request: Request,
         except ValidationError:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
     return lecture_logic.build_lectures_response(db,
-                                                 '{api_base}?cursor={{cursor}}&limit={{limit}}'.format(
-                                                     api_base=request.url.path.rstrip('/')),
+                                                 _build_url_template(request),
                                                  cursor,
                                                  limit,
                                                  filters)
+
+
+def _build_url_template(request):
+    return '{api_base}?cursor={{cursor}}&limit={{limit}}&filter[author_id]={{author_id}}'.format(
+        api_base=request.url.path.rstrip('/'))
 
 
 @router.post("/", response_model=schemas.Lecture)

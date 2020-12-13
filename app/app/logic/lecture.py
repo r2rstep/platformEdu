@@ -21,15 +21,19 @@ def build_lectures_response(db: Session,
                             limit: int,
                             filters: crud.LectureQueryFilters):
     def _build_links():
-        links = LecturesLinks(self=url_template.format(cursor=cursor, limit=limit))
+        links = LecturesLinks(self=url_template.format(cursor=cursor,
+                                                       limit=limit,
+                                                       author_id=filters.author_id if filters else ''))
 
         if next_page_first_lecture:
             links.next = url_template.format(cursor=next_page_first_lecture.uploaded_at,
-                                             limit=limit)
+                                             limit=limit,
+                                             author_id=filters.author_id if filters else '')
 
         if len(previous_page_lectures) > 1:
             links.previous = url_template.format(cursor=previous_page_lectures[-1].uploaded_at,
-                                                 limit=limit)
+                                                 limit=limit,
+                                                 author_id=filters.author_id if filters else '')
         return links
 
     lectures_in_db = crud.lecture.build_db_query_for_get(
