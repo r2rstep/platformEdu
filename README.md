@@ -10,6 +10,12 @@ lower than a system-wide average,
 requests against the provided API endpoints.
 
 
+# In progress
+
+* As an admin I want to have an API endpoint to batch load the seed data into a
+database,
+
+
 # Not Implemented (with a description of how I would do it)
 
 * As a user I want to have an API endpoint for querying lectures by tags
