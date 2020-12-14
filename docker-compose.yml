@@ -27,11 +27,35 @@ services:
       - db
     env_file:
       - .env
-  
+
+
+  queue:
+    image: rabbitmq:3
+    env_file:
+      - .env
+    networks:
+      - tasks
+
+
+  celeryworker:
+    image: '${DOCKER_IMAGE_CELERYWORKER?Variable not set}:${TAG-latest}'
+    depends_on:
+      - queue
+    env_file:
+      - .env
+    networks:
+      - tasks
+      - backend
+    build:
+      context: .
+      dockerfile: celeryworker.dockerfile
+
+
   backend:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     depends_on:
       - db
+      - celeryworker
     ports:
       - 3000:8000
     env_file:
@@ -56,3 +80,4 @@ volumes:
 networks:
   backend:
   pg:
+  tasks:
