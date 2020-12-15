@@ -34,7 +34,7 @@ services:
     env_file:
       - .env
     networks:
-      - tasks
+      - backend
 
 
   celeryworker:
@@ -44,7 +44,6 @@ services:
     env_file:
       - .env
     networks:
-      - tasks
       - backend
     build:
       context: .
@@ -78,4 +77,3 @@ volumes:
 networks:
   backend:
   pg:
-  tasks:

@@ -4,6 +4,10 @@ services:
     ports:
       - "5050:5050"
 
+  queue:
+    ports:
+      - "5672:5672"
+
   backend:
     volumes:
       - ./app:/app
@@ -14,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: backend.dockerfile
+    command: bash -c "python app/initial_data.py && uvicorn --reload --host 0.0.0.0 app.main:app"
 
   celeryworker:
     volumes:
