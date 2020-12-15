@@ -81,6 +81,7 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
     USERS_OPEN_REGISTRATION: bool = False
+    QUEUE_HOSTNAME: str
 
     class Config:
         case_sensitive = True
