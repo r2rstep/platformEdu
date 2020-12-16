@@ -13,4 +13,4 @@ router = APIRouter()
 def get_job_details(job_id: int, req: Request, db: Session = Depends(deps.get_db)):
     job_in_db = crud.job.get(db, id=job_id)
     state, result = get_job_result(db, job_id)
-    return Job(**job_in_db, state=state, result=result, links=JobLinks(self=req.url.path.rstrip('/')))
+    return Job(**job_in_db.__dict__, state=state, result=result, links=JobLinks(self=req.url.path.rstrip('/')))

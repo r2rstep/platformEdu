@@ -24,6 +24,9 @@ class JobInDbBase(JobBase):
     id: int
     type: JobType
 
+    class Config:
+        orm_mode = True
+
 
 class JobInDb(JobInDbBase):
     id: int
