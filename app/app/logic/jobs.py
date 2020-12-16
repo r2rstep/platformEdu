@@ -7,7 +7,7 @@ from app.schemas.jobs import JobState, JobResult
 
 def get_job_result(db: Session, job_id: int) -> (JobState, JobResult):
     job = crud.job.get(db, job_id)
-    celery_task = celery_app.AsyncResult(job.celery_task_id)
+    celery_task = celery_app.AsyncResult(job.task_id)
     state = JobState.pending
     result = JobResult.unknown
 

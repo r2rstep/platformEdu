@@ -13,7 +13,7 @@ class JobBase(BaseModel):
 
 
 class JobCreate(JobBase):
-    celery_task_id: str
+    task_id: str
 
 
 class JobUpdate(JobBase):
@@ -31,7 +31,7 @@ class JobInDbBase(JobBase):
 class JobInDb(JobInDbBase):
     id: int
     type: JobType
-    celery_task_id: str
+    task_id: str
 
 
 class JobLinks(BaseModel):
