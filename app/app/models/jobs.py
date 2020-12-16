@@ -1,14 +1,6 @@
-from typing import TYPE_CHECKING
-import uuid
-
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Numeric
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String
 
 from app.db.base_class import Base
-
-if TYPE_CHECKING:
-    from .user import User  # noqa: F401
 
 
 class Job(Base):
