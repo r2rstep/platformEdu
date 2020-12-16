@@ -67,7 +67,7 @@ class CRUDLecture(CRUDBase[Lecture, LectureCreate, LectureUpdate]):
                      order_direction: OrderDirection,
                      url_filters: LectureQueryFilters = None) -> List[Query]:
         filter_query: List[Query] = [or_(Lecture.rating_average > LectureMinRating.min_rating_value,
-                                         Lecture.min_rating_id == None)]
+                                         Lecture.min_rating_id == None)]    # noqa: E711
         if upload_time_included:
             if order_direction == OrderDirection.descending:
                 filter_query.append(Lecture.uploaded_at <= upload_time_included)

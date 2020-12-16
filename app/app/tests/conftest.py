@@ -5,7 +5,6 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app import crud
 from app.db.session import SessionLocal
 from app.main import app
 from app.tests.utils.user import authentication_token_from_email
