@@ -7,7 +7,8 @@ database,
 to paginate the results,
 * As a user I want to have an API endpoint for querying lectures by author's name,
 * As a content provider I don't want users to see my lectures if they've been rated 
-lower than a system-wide average,
+lower than a system-wide average (it's done to the point that it's tested in UT with date loaded in DB;
+endpoints for adding reviews with ratings are missing),
 * As a code reviewer I want to have an easy way of spinning up the project and running test 
 requests against the provided API endpoints.
 
