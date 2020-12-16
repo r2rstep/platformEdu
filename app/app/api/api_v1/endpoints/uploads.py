@@ -8,13 +8,17 @@ from app.api import deps
 from app.core.config import settings
 from app import crud
 from app.schemas.jobs import JobCreate, JobType
+from app.schemas.user import User
 from app.tasks.batch_upload import process_batch_upload
 
 router = APIRouter()
 
 
 @router.post('/batchUpload')
-def batch_upload(resp: Response, lectures_json: bytes = File(...), db: Session = Depends(deps.get_db)):
+def batch_upload(resp: Response,
+                 lectures_json: bytes = File(...),
+                 db: Session = Depends(deps.get_db),
+                 _: User = Depends(deps.get_current_active_superuser)):
     promise: AsyncResult = process_batch_upload.delay(json.loads(lectures_json))
     job_in_db = crud.job.create(db, obj_in=JobCreate(type=JobType.batch_upload, task_id=str(promise.id)))
     resp.status_code = status.HTTP_303_SEE_OTHER
