@@ -1,6 +1,8 @@
 # Implemented functionalities
 
 * As a developer I want to store all data in a relational database,
+* As an admin I want to have an API endpoint to batch load the seed data into a
+database,
 * As a user I want to have an API endpoint for retrieving all lectures with the ability 
 to paginate the results,
 * As a user I want to have an API endpoint for querying lectures by author's name,
@@ -8,12 +10,6 @@ to paginate the results,
 lower than a system-wide average,
 * As a code reviewer I want to have an easy way of spinning up the project and running test 
 requests against the provided API endpoints.
-
-
-# In progress
-
-* As an admin I want to have an API endpoint to batch load the seed data into a
-database,
 
 
 # Not Implemented (with a description of how I would do it)
