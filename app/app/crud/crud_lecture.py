@@ -8,8 +8,9 @@ from sqlalchemy.orm import Session, Query
 
 from .base import CRUDBase
 from .order_direction import OrderDirection
-from app.models.lecture import Lecture, LectureMinRating
-from app.schemas.lecture import LectureCreate, LectureUpdate, LectureMinRatingCreate, LectureMinRatingUpdate
+from app.models.lecture import Lecture, LectureMinRating, Review, LectureType
+from app.schemas.lecture import (LectureCreate, LectureUpdate, LectureMinRatingCreate, LectureMinRatingUpdate,
+                                 ReviewCreate, ReviewUpdate, LectureTypeCreate, LectureTypeUpdate)
 
 
 class LectureQueryFilters(BaseModel):
@@ -83,5 +84,15 @@ class CRUDLectureMinRating(CRUDBase[LectureMinRating, LectureMinRatingCreate, Le
     pass
 
 
+class CRUDLectureType(CRUDBase[LectureType, LectureTypeCreate, LectureTypeUpdate]):
+    pass
+
+
+class CRUDReview(CRUDBase[Review, ReviewCreate, ReviewUpdate]):
+    pass
+
+
 lecture = CRUDLecture(Lecture)
 lecture_min_rating = CRUDLectureMinRating(LectureMinRating)
+lecture_type = CRUDLectureType(LectureType)
+review = CRUDReview(Review)

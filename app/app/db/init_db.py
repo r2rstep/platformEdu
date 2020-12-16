@@ -23,3 +23,6 @@ def init_db(db: Session) -> None:
             is_superuser=True,
         )
         user = crud.user.create(db, obj_in=user_in)  # noqa: F841
+
+    for lecture_type in schemas.LectureTypeChoices:
+        crud.lecture_type.create(db, obj_in=schemas.LectureTypeCreate(name=lecture_type.value))

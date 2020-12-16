@@ -34,6 +34,7 @@ class Lecture(Base):
     rating_average = Column(Numeric(asdecimal=False))
     min_rating_id = Column(Integer, ForeignKey('lectureminrating.id'))
     min_rating = relationship('LectureMinRating')
+    video_url = Column(String)
 
 
 class Review(Base):
@@ -41,7 +42,7 @@ class Review(Base):
     lecture_id = Column(UUID(as_uuid=True), ForeignKey('lecture.id'))
     lecture = relationship('Lecture', back_populates='reviews')
     added_at = Column(DateTime, nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    user = Column(String)
     text = Column(String)
     rating = Column(Integer)
 

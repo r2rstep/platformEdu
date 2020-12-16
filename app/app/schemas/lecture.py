@@ -17,6 +17,7 @@ class LectureBase(BaseModel):
     uploaded_at: Optional[datetime] = None
     pdf_download_url: Optional[str] = None
     slug: Optional[str] = None
+    video_url: Optional[str] = None
 
 
 # Properties to receive on item creation
@@ -73,9 +74,35 @@ class LectureMinRatingUpdate(LectureMinRatingBase):
     pass
 
 
+class LectureTypeChoices(enum.Enum):
+    text = 'text'
+    video = 'video'
+
+
+class LectureTypeBase(BaseModel):
+    name: Optional[str] = None
+
+
+class LectureTypeInDbBase(LectureTypeBase):
+    id: UUID4
+    name: str
+
+
+class LectureTypeInDb(LectureTypeInDbBase):
+    pass
+
+
+class LectureTypeUpdate(LectureTypeBase):
+    pass
+
+
+class LectureTypeCreate(LectureTypeBase):
+    pass
+
+
 class ReviewBase(BaseModel):
     added_at: Optional[datetime] = None
-    user_id: Optional[UUID4] = None
+    user: Optional[str] = None
     lecture_id: Optional[UUID4] = None
     text: Optional[str] = None
     rating: Optional[conint(ge=0, le=10)] = None
@@ -84,7 +111,6 @@ class ReviewBase(BaseModel):
 class ReviewInDbBase(ReviewBase):
     id: UUID4
     added_at: datetime
-    user_id: UUID4
     lecture_id: UUID4
 
 
